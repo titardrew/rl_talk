@@ -7,5 +7,4 @@ setup(
     description="",
     author="Andrii Tytarenko",
     author_email="titarenkoan@gmail.com",
-    py_modules=["lib"],
 )
