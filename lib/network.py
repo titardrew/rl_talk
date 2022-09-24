@@ -2,10 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-##########################################################################
-########                        TASK 1                            ########
-##########################################################################
-# Implement Fully-connected neural network with two layers               #
 class MLP(nn.Module):
     def __init__(self, n_input, n_hidden, n_out):
         """
@@ -20,12 +16,9 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = self.fc1(x)
-        x = F.relu(x) 
+        x = F.relu(x)
         x = self.fc2(x)
         return x
-##########################################################################
-########                        TASK 1                            ########
-##########################################################################
 
 
 class Flatten(nn.Module):
@@ -86,6 +79,3 @@ class NatureCNN(nn.Module):
         x = self.feature_extractor(x)
         x = self.head(x)
         return x
-
-
-

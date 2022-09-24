@@ -1,11 +1,6 @@
 import random
 
 
-##########################################################################
-########                        TASK 0                            ########
-##########################################################################
-# Implement ReplayBuffer class. See docstrings for details               #
-
 class ReplayBuffer(object):
     def __init__(self, capacity):
         """
@@ -44,7 +39,3 @@ class ReplayBuffer(object):
     def __len__(self):
         """Return size of the buffer."""
         return len(self.buffer)
-
-##########################################################################
-########                        TASK 0                            ########
-##########################################################################

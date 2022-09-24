@@ -23,7 +23,7 @@ class Logger(object):
 
         self.vals_dict = {}
         self.count_dict = {}
-        self.tb_handler = TensorboardHadler(log_dir, unique_prefix)
+        self.tb_handler = TensorboardHandler(log_dir, unique_prefix)
         self.csv_handler = CsvHandler(log_dir, unique_prefix)
 
         LOGGER = self
@@ -58,7 +58,9 @@ class Logger(object):
             else:
                 return func(arr)
 
-        self.log_kv(new_key, safe_func(val))
+        reduced_val = safe_func(val)
+        self.log_kv(new_key, reduced_val)
+        return reduced_val
 
     def write_logs(self, skip_arrs=False):
         kvs = {}
@@ -81,33 +83,25 @@ class Logger(object):
         self.csv_handler.close()
 
 
-class TensorboardHadler:
+class TensorboardHandler:
     def __init__(self, log_dir, prefix):
         path = log_dir / ('tb%s' % prefix)
         path.mkdir(exist_ok=True)
         path = path / 'events'
         self.step = 1
         import tensorflow as tf
-        from tensorflow.python import pywrap_tensorflow
-        from tensorflow.core.util import event_pb2
-        from tensorflow.python.util import compat
         self.tf = tf
-        self.event_pb2 = event_pb2
-        self.pywrap_tensorflow = pywrap_tensorflow
-        byte_path = compat.as_bytes(str(path))
-        self.writer = pywrap_tensorflow.EventsWriter(byte_path)
+        self.writer = self.tf.summary.create_file_writer(str(path))
 
     def write_logs(self, kvs):
         def summary_val(k, v):
-            kwargs = {'tag': k, 'simple_value': float(v)}
-            return self.tf.Summary.Value(**kwargs)
-        _vals = [summary_val(k, v) for k, v in kvs.items()]
-        summary = self.tf.Summary(value=_vals)
-        event = self.event_pb2.Event(wall_time=time.time(), summary=summary)
-        event.step = self.step
-        self.writer.WriteEvent(event)
-        self.writer.Flush()
-        self.step += 1
+            return self.tf.summary.scalar(k, float(v))
+        vals = [summary_val(k, v) for k, v in kvs.items()]
+        with self.writer.as_default():
+            for tag, value in kvs.items():
+                self.tf.summary.scalar(tag, value, step=self.step)
+            self.writer.flush()
+            self.step += 1
 
     def close(self):
         if self.writer:
